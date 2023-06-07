@@ -17,7 +17,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   if ($user) {
     if ($_POST["apikey"] == $user["apiKey"]) {
-      die("loged in");
+      session_start();
+      $_SESSION["user_id"] = $user["id"];
+      header("location: ./../index.php");
+      exit();
     }
   }
   $is_invalid = true;

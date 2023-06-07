@@ -24,4 +24,5 @@ session_start();
 <?php
 unset($_SESSION['email']);
 unset($_SESSION['apiKey']);
+session_destroy();
 ?>
