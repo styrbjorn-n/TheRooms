@@ -1,19 +1,26 @@
 <?php
 
-session_start();
-$is_invalid = false;
-$is_complete = false;
+session_start(); // Start a session to store user data
+$is_invalid = false; // Variable to track if the command is invalid
+$is_complete = false; // Variable to track if the game is complete
 
-function isDoorOpen($interactebleObject, $command)
+function interpret_command($command, $nearbyRooms)
 {
-  foreach ($interactebleObject as $key => $value) {
-    if (str_contains($command, $key)) {
-      return (true);
-      exit;
-    }
+  switch ($command) {
+    case str_contains($command, "go"): // If the command contains the word "go"
+      foreach ($nearbyRooms as $room => $value) { // Loop through nearby rooms
+        if ($value != null && str_contains($command, $room)) { // If the room is valid and mentioned in the command
+          $_SESSION["next_room"] = $value; // Set the next room in the session
+          return true; // Return true to indicate the command was interpreted successfully
+          break; // Exit the loop
+        }
+      }
+    default:
+      return false; // Return false if the command is not recognized
   }
-  return (false);
 }
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,55 +35,63 @@ function isDoorOpen($interactebleObject, $command)
 <body>
   <h1>The Rooms</h1>
 
-  <?php if (isset($_SESSION["user_id"])) : ?>
+   <?php if (isset($_SESSION["user_id"])) : ?> <!-- Check if the user is logged in -->
 
     <?php
-    $mysqli = require __DIR__ . "./PHP/database.php";
-
-    $sql = sprintf(
-      "SELECT * FROM users
-      WHERE id = '%s'",
-      $mysqli->real_escape_string($_SESSION["user_id"])
-    );
-
-    $result = $mysqli->query($sql);
-
-    $user = $result->fetch_assoc();
-    $roomData = require __DIR__ . "./PHP/room.php"
-
+    $mysqli = require __DIR__ . "./PHP/database.php"; // Include the database connection
+    $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
     ?>
 
-    <h2>Welcome back <?php echo ($user["name"]); ?>.</h2>
+     <?php if (isset($_POST["command"])) : ?> <!-- Check if a command has been submitted -->
+      <?php if (interpret_command($_POST["command"], $roomData[1])) : ?> <!-- Interpret the command -->
+        <?php
 
-    <?php if (isset($_POST["command"])) : ?>
-      <?php if (isDoorOpen($roomData[1], $_POST["command"])) : ?>
-        <p>Room done</p>
-        <?php $is_complete = true ?>
+        $update_room_sql = sprintf("UPDATE users
+        SET room = '%s'
+        WHERE user_id = '%s'",$_SESSION["next_room"],$_SESSION["user_id"]); // Prepare an SQL query to update the user's room
+
+        $mysqli->query($update_room_sql); // Execute the SQL query to update the room
+        unset($_POST["command"]); // Clear the command after it has been executed
+
+        ?>
       <?php else : ?>
-        <?php $is_invalid = true; ?>
+        <?php $is_invalid = true; // Set the flag to indicate an invalid command ?>
       <?php endif; ?>
     <?php endif; ?>
 
-    <?php if( ! $is_complete): ?>
-    <?php foreach ($roomData[0] as $message) : ?>
-      <p><?php echo ($message); ?></p>
-    <?php endforeach; ?>
+    <?php 
+        $user_sql = sprintf(
+          "SELECT * FROM users
+          WHERE user_id = '%s'",
+          $mysqli->real_escape_string($_SESSION["user_id"])
+        ); // Prepare an SQL query to fetch user data
+    
+        $user_result = $mysqli->query($user_sql); // Execute the SQL query
+    
+        $user = $user_result->fetch_assoc(); // Fetch the user data
+        $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
+    ?>
+    
+    <h2>Welcome back <?php echo ($user["name"]); ?>.</h2> <!-- Display the user's name -->
+    <h3><?php echo $user["room"] ?></h3> <!-- Display the user's current room -->
 
-    <form action="" method="post">
-      <?php if ($is_invalid) : ?>
-        <p>Invalid command</p>
-      <?php endif; ?>
-      <div>
-        <label for="command">What do you do?</label>
-        <input type="text" name="command" id="command">
-      </div>
-      <button>Submit Command</button>
-    </form>
+    <?php if (!$is_complete) : ?> <!-- If the game is not complete -->
+      <p><?php echo ($roomData[0]); ?></p> <!-- Display the room description -->
+      <form action="" method="post"> <!-- Create a form to submit commands -->
+        <?php if ($is_invalid) : ?>
+          <p>Invalid command</p> <!-- Display an error message for invalid commands -->
+        <?php endif; ?>
+        <div>
+          <label for="command">What do you do?</label> <!-- Label for the command input field -->
+          <input type="text" name="command" id="command"> <!-- Command input field -->
+        </div>
+        <button>Submit Command</button>
+      </form>
     <?php endif; ?>
 
-    <p><a href="./PHP/logout.php">Log out</a></p>
+    <p><a href="./PHP/logout.php">Log out</a></p> <!-- Logout link -->
   <?php else : ?>
-    <p><a href="./PAGES/login.php">Log in</a> or <a href="./PAGES/signup.html">Sign up</a></p>
+    <p><a href="./PAGES/login.php">Log in</a> or <a href="./PAGES/signup.html">Sign up</a></p> <!-- Login and signup links -->
   <?php endif; ?>
 </body>
 

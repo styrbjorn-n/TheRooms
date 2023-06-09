@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if ($user) {
     if ($_POST["apikey"] == $user["apiKey"]) {
       session_start();
-      $_SESSION["user_id"] = $user["id"];
+      $_SESSION["user_id"] = $user["user_id"];
       header("location: ./../index.php");
       exit();
     }
