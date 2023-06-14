@@ -6,20 +6,12 @@ $is_complete = false; // Variable to track if the game is complete
 
 function interpret_command($command, $nearbyRooms)
 {
-  switch ($command) {
-    case str_contains($command, "go"): // If the command contains the word "go"
-      foreach ($nearbyRooms as $room => $value) { // Loop through nearby rooms
-        if ($value != null && str_contains($command, $room)) { // If the room is valid and mentioned in the command
-          $_SESSION["next_room"] = $value; // Set the next room in the session
-          return true; // Return true to indicate the command was interpreted successfully
-          break; // Exit the loop
-        }
-      }
-    default:
-      return false; // Return false if the command is not recognized
-  }
-}
+  $_SESSION["command"] = $command;
+  $_SESSION["nearbyRooms"] = $nearbyRooms;
 
+  $response = require __DIR__ . "./PHP/interpret_command.php";
+  return $response;
+}
 
 ?>
 <!DOCTYPE html>
@@ -35,43 +27,44 @@ function interpret_command($command, $nearbyRooms)
 <body>
   <h1>The Rooms</h1>
 
-   <?php if (isset($_SESSION["user_id"])) : ?> <!-- Check if the user is logged in -->
+  <?php if (isset($_SESSION["user_id"])) : ?> <!-- Check if the user is logged in -->
 
     <?php
     $mysqli = require __DIR__ . "./PHP/database.php"; // Include the database connection
     $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
     ?>
 
-     <?php if (isset($_POST["command"])) : ?> <!-- Check if a command has been submitted -->
+    <?php if (isset($_POST["command"])) : ?> <!-- Check if a command has been submitted -->
       <?php if (interpret_command($_POST["command"], $roomData[1])) : ?> <!-- Interpret the command -->
         <?php
 
         $update_room_sql = sprintf("UPDATE users
         SET room = '%s'
-        WHERE user_id = '%s'",$_SESSION["next_room"],$_SESSION["user_id"]); // Prepare an SQL query to update the user's room
+        WHERE user_id = '%s'", $_SESSION["next_room"], $_SESSION["user_id"]); // Prepare an SQL query to update the user's room
 
         $mysqli->query($update_room_sql); // Execute the SQL query to update the room
         unset($_POST["command"]); // Clear the command after it has been executed
 
         ?>
       <?php else : ?>
-        <?php $is_invalid = true; // Set the flag to indicate an invalid command ?>
+        <?php $is_invalid = true; // Set the flag to indicate an invalid command 
+        ?>
       <?php endif; ?>
     <?php endif; ?>
 
-    <?php 
-        $user_sql = sprintf(
-          "SELECT * FROM users
+    <?php
+    $user_sql = sprintf(
+      "SELECT * FROM users
           WHERE user_id = '%s'",
-          $mysqli->real_escape_string($_SESSION["user_id"])
-        ); // Prepare an SQL query to fetch user data
-    
-        $user_result = $mysqli->query($user_sql); // Execute the SQL query
-    
-        $user = $user_result->fetch_assoc(); // Fetch the user data
-        $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
+      $mysqli->real_escape_string($_SESSION["user_id"])
+    ); // Prepare an SQL query to fetch user data
+
+    $user_result = $mysqli->query($user_sql); // Execute the SQL query
+
+    $user = $user_result->fetch_assoc(); // Fetch the user data
+    $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
     ?>
-    
+
     <h2>Welcome back <?php echo ($user["name"]); ?>.</h2> <!-- Display the user's name -->
     <h3><?php echo $user["room"] ?></h3> <!-- Display the user's current room -->
 
