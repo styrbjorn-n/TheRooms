@@ -3,7 +3,7 @@
 $mysqli = require __DIR__ . "./database.php";
 
 $sql = sprintf(
-  "SELECT user_id, name, users.room, northen_room, southern_room, western_room, eastern_room, message
+  "SELECT user_id, name, users.room, northen_room, southern_room, western_room, eastern_room, message, interactable_item, pickeble_item, required_item
   FROM users 
   INNER JOIN rooms
   ON users.room = rooms.room
@@ -19,8 +19,13 @@ return array(
   $roomData["message"],
   array(
     "north" => $roomData["northen_room"],
-    "south" =>$roomData["southern_room"],
+    "south" => $roomData["southern_room"],
     "west" => $roomData["western_room"],
     "east" => $roomData["eastern_room"]
+  ),
+  array(
+    $roomData["interactable_item"],
+    $roomData["pickeble_item"],
+    $roomData["required_item"]
   )
 );

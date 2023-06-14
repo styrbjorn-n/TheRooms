@@ -20,4 +20,3 @@ if ($mysqli->connect_errno) {
 
 return $mysqli;
 ?>
-<a href="./../vendor/autoload.php"></a>

@@ -4,10 +4,11 @@ session_start(); // Start a session to store user data
 $is_invalid = false; // Variable to track if the command is invalid
 $is_complete = false; // Variable to track if the game is complete
 
-function interpret_command($command, $nearbyRooms)
+function interpret_command($command, $nearbyRooms, $itemConditions)
 {
   $_SESSION["command"] = $command;
   $_SESSION["nearbyRooms"] = $nearbyRooms;
+  $_SESSION["itemConditions"] = $itemConditions;
 
   $response = require __DIR__ . "./PHP/interpret_command.php";
   return $response;
@@ -35,7 +36,7 @@ function interpret_command($command, $nearbyRooms)
     ?>
 
     <?php if (isset($_POST["command"])) : ?> <!-- Check if a command has been submitted -->
-      <?php if (interpret_command($_POST["command"], $roomData[1])) : ?> <!-- Interpret the command -->
+      <?php if (interpret_command($_POST["command"], $roomData[1], $roomData[2])) : ?> <!-- Interpret the command -->
         <?php
 
         $update_room_sql = sprintf("UPDATE users
