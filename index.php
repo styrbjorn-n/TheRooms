@@ -70,7 +70,11 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
     <h3><?php echo $user["room"] ?></h3> <!-- Display the user's current room -->
 
     <?php if (!$is_complete) : ?> <!-- If the game is not complete -->
-      <p><?php echo ($roomData[0]); ?></p> <!-- Display the room description -->
+      <?php if ($user[$roomData[2][1]] > 0 && !$roomData[2][1] == null) : ?>
+        <p>You have picked up all items in this room.</p>
+      <?php else : ?>
+        <p><?php echo ($roomData[0]); ?></p> <!-- Display the room description -->
+      <?php endif; ?>
       <form action="" method="post"> <!-- Create a form to submit commands -->
         <?php if ($is_invalid) : ?>
           <p>Invalid command</p> <!-- Display an error message for invalid commands -->
