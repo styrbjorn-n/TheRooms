@@ -32,7 +32,18 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
 
     <?php
     $mysqli = require __DIR__ . "./PHP/database.php"; // Include the database connection
-    $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
+    try {
+      $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
+      if (empty($roomData)) {
+        throw new Exception("There was an error retriving the player loaction.");
+      }
+    } catch (Exception $e) {
+      echo ($e->getMessage());
+      echo ("<br> We are sorry for the incovinience you have been reset to the start of the game.");
+      echo ("<br> Please re-load the page");
+      exit();
+    }
+
     ?>
 
     <?php if (isset($_POST["command"])) : ?> <!-- Check if a command has been submitted -->
@@ -70,7 +81,7 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
     <h3><?php echo $user["room"] ?></h3> <!-- Display the user's current room -->
 
     <?php if (!$is_complete) : ?> <!-- If the game is not complete -->
-      <?php if ($user[$roomData[2][1]] > 0 && !$roomData[2][1] == null) : ?>
+      <?php if (!$roomData[2][1] === "" && $user[$roomData[2][1]] > 0 && !$roomData[2][1] == null) : ?>
         <p>You have picked up all items in this room.</p>
       <?php else : ?>
         <p><?php echo ($roomData[0]); ?></p> <!-- Display the room description -->

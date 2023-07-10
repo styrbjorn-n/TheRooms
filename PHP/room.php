@@ -15,17 +15,25 @@ $sql = sprintf(
 $result = $mysqli->query($sql);
 $roomData = $result->fetch_assoc();
 
-return array(
-  $roomData["message"],
-  array(
-    "north" => $roomData["northen_room"],
-    "south" => $roomData["southern_room"],
-    "west" => $roomData["western_room"],
-    "east" => $roomData["eastern_room"]
-  ),
-  array(
-    $roomData["interactable_item"],
-    $roomData["pickeble_item"],
-    $roomData["required_item"]
-  )
-);
+if (!isset($roomData["room"])) {
+  $update_room_sql = sprintf("UPDATE users
+        SET room = 'A'
+        WHERE user_id = '%s'", $_SESSION["user_id"]);
+  $mysqli->query($update_room_sql);
+  return array();
+} else {
+  return array(
+    $roomData["message"],
+    array(
+      "north" => $roomData["northen_room"],
+      "south" => $roomData["southern_room"],
+      "west" => $roomData["western_room"],
+      "east" => $roomData["eastern_room"]
+    ),
+    array(
+      $roomData["interactable_item"],
+      $roomData["pickeble_item"],
+      $roomData["required_item"]
+    )
+  );
+}
