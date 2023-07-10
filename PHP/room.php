@@ -15,7 +15,7 @@ $sql = sprintf(
 $result = $mysqli->query($sql);
 $roomData = $result->fetch_assoc();
 
-if (!isset($roomData["room"])) {
+if (!isset($roomData["room"])) { // this entire if else block might be useless as i might have caused the error of some users having no current room set when doing manual changes in the database
   $update_room_sql = sprintf("UPDATE users
         SET room = 'A'
         WHERE user_id = '%s'", $_SESSION["user_id"]);

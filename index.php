@@ -32,7 +32,7 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
 
     <?php
     $mysqli = require __DIR__ . "./PHP/database.php"; // Include the database connection
-    try {
+    try { // this entire try catch block might be useless as i might have caused the error of some users having no current room set when doing manual changes in the database
       $roomData = require __DIR__ . "./PHP/room.php"; // Include the room data
       if (empty($roomData)) {
         throw new Exception("There was an error retriving the player loaction.");
