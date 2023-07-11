@@ -3,7 +3,7 @@
 $mysqli = require __DIR__ . "./database.php";
 
 $sql = sprintf(
-  "SELECT user_id, name, users.room, northen_room, southern_room, western_room, eastern_room, message, interactable_item, pickeble_item, required_item
+  "SELECT user_id, name, users.room, northen_room, southern_room, western_room, eastern_room, message, interactable_item, pickeble_item, required_item, pickeble_item_type
   FROM users 
   INNER JOIN rooms
   ON users.room = rooms.room
@@ -34,6 +34,7 @@ if (!isset($roomData["room"])) { // this entire if else block might be useless a
       $roomData["interactable_item"],
       $roomData["pickeble_item"],
       $roomData["required_item"]
-    )
+    ),
+    $roomData["pickeble_item_type"]
   );
 }

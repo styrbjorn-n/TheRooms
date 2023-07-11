@@ -49,14 +49,7 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
     <?php if (isset($_POST["command"])) : ?> <!-- Check if a command has been submitted -->
       <?php if (interpret_command($_POST["command"], $roomData[1], $roomData[2])) : ?> <!-- Interpret the command -->
         <?php
-
-        $update_room_sql = sprintf("UPDATE users
-        SET room = '%s'
-        WHERE user_id = '%s'", $_SESSION["next_room"], $_SESSION["user_id"]); // Prepare an SQL query to update the user's room
-
-        $mysqli->query($update_room_sql); // Execute the SQL query to update the room
         unset($_POST["command"]); // Clear the command after it has been executed
-
         ?>
       <?php else : ?>
         <?php $is_invalid = true; // Set the flag to indicate an invalid command 
@@ -81,8 +74,13 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
     <h3><?php echo $user["room"] ?></h3> <!-- Display the user's current room -->
 
     <?php if (!$is_complete) : ?> <!-- If the game is not complete -->
-      <?php if (!$roomData[2][1] === "" && $user[$roomData[2][1]] > 0 && !$roomData[2][1] == null) : ?>
+      <?php if ($roomData[2][1] !== ""  && $user[$roomData[2][1]] !== "0") : ?>
         <p>You have picked up all items in this room.</p>
+      <?php elseif (isset($_SESSION["containerOpen"]) && $_SESSION["containerOpen"] == true) : ?>
+        <p>The container opens,<br>you see a <?php echo ($roomData[3]); ?></p>
+        <?php unset($_SESSION["containerOpen"]); ?>
+      <?php elseif(isset($_SESSION["doorOpen"]) && $_SESSION["doorOpen"] == true) : ?>
+        <p>The door opens</p>
       <?php else : ?>
         <p><?php echo ($roomData[0]); ?></p> <!-- Display the room description -->
       <?php endif; ?>

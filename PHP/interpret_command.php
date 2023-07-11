@@ -6,22 +6,28 @@ $nearbyRooms = $_SESSION["nearbyRooms"];
 $itemConditions = $_SESSION["itemConditions"];
 
 unset($_SESSION["nearbyRooms"], $_SESSION["nearbyRooms"], $_SESSION["itemConditions"]);
+$mysqli = require __DIR__ . "./database.php";
 
 switch ($command) {
   case str_contains($command, "go"): // If the command contains the word "go"
     foreach ($nearbyRooms as $room => $value) { // Loop through nearby rooms
       if ($value != null && str_contains($command, $room)) { // If the room is valid and mentioned in the command
-        $_SESSION["next_room"] = $value; // Set the next room in the session
+
+        $update_room_sql = sprintf("UPDATE users
+        SET room = '%s'
+        WHERE user_id = '%s'", $value, $_SESSION["user_id"]); // Prepare an SQL query to update the user's room
+
+        $mysqli->query($update_room_sql); // Execute the SQL query to update the room
+
         return true; // Return true to indicate the command was interpreted successfully
         break; // Exit the loop
       }
     }
   case str_contains($command, "pick up"):
-    $interactableItems = array("key", "thing");
+    $interactableItems = array("key", "thing", "item");
     foreach ($interactableItems as $item) {
       if (str_contains($command, $item) || str_contains($itemConditions[1], $item)) {
 
-        $mysqli = require __DIR__ . "./database.php";
 
         $sql = sprintf(
           "UPDATE users
@@ -37,8 +43,45 @@ switch ($command) {
         break;
       }
     }
-    return true;
-    break;
+  case str_contains($command, "open"):
+    if (str_contains($command, "container")) {
+
+      $sql = sprintf(
+        "SELECT D_key, E_key
+      FROM users
+      WHERE user_id = 16"
+      );
+
+      $result = $mysqli->query($sql);
+      $userItems = $result->fetch_assoc();
+
+      foreach ($userItems as $item => $value) {
+        if ($itemConditions[2] == $item) {
+
+          $_SESSION["containerOpen"] = true;
+          return true;
+          break;
+        }
+      }
+    } elseif (str_contains($command, "door")) {
+      $sql = sprintf(
+        "SELECT D_key, E_key
+      FROM users
+      WHERE user_id = 16"
+      );
+
+      $result = $mysqli->query($sql);
+      $userItems = $result->fetch_assoc();
+
+      foreach ($userItems as $item => $value) {
+        if ($itemConditions[2] == $item) {
+
+          $_SESSION["doorOpen"] = true;
+          return true;
+          break;
+        }
+      }
+    }
   default:
     return false; // Return false if the command is not recognized
 }
