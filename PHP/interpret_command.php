@@ -12,35 +12,68 @@ switch ($command) {
   case str_contains($command, "go"): // If the command contains the word "go"
     foreach ($nearbyRooms as $room => $value) { // Loop through nearby rooms
       if ($value != null && str_contains($command, $room)) { // If the room is valid and mentioned in the command
+        if (str_contains($itemConditions[0], $value . "door") && isset($_SESSION["doorOpen"]) && $_SESSION["doorOpen"] == true) {
+          $update_room_sql = sprintf("UPDATE users
+          SET room = '%s'
+          WHERE user_id = '%s'", $value, $_SESSION["user_id"]); // Prepare an SQL query to update the user's room
 
-        $update_room_sql = sprintf("UPDATE users
-        SET room = '%s'
-        WHERE user_id = '%s'", $value, $_SESSION["user_id"]); // Prepare an SQL query to update the user's room
+          $mysqli->query($update_room_sql); // Execute the SQL query to update the room
 
-        $mysqli->query($update_room_sql); // Execute the SQL query to update the room
+          unset($_SESSION["doorOpen"]);
+          unset($_SESSION["containerOpen"]);
+          return true; // Return true to indicate the command was interpreted successfully
+          break; // Exit the loop
+        } elseif (str_contains($itemConditions[0], $value . "door") && !isset($_SESSION["doorOpen"])) {
+          return false;
+          break;
+        } else {
+          $update_room_sql = sprintf("UPDATE users
+          SET room = '%s'
+          WHERE user_id = '%s'", $value, $_SESSION["user_id"]); // Prepare an SQL query to update the user's room
 
-        return true; // Return true to indicate the command was interpreted successfully
-        break; // Exit the loop
+          $mysqli->query($update_room_sql); // Execute the SQL query to update the room
+          unset($_SESSION["doorOpen"]);
+          unset($_SESSION["containerOpen"]);
+          return true; // Return true to indicate the command was interpreted successfully
+          break; // Exit the loop
+        }
       }
     }
   case str_contains($command, "pick up"):
     $interactableItems = array("key", "thing", "item");
     foreach ($interactableItems as $item) {
-      if (str_contains($command, $item) || str_contains($itemConditions[1], $item)) {
+      if (str_contains($command, $item) && str_contains($itemConditions[1], $item)) {
+        if ($itemConditions[0] != "" && isset($_SESSION["containerOpen"]) && $_SESSION["containerOpen"] == true) {
+          $sql = sprintf(
+            "UPDATE users
+          SET `%s` = 1
+          WHERE user_id = %s",
+            $itemConditions[1],
+            $_SESSION["user_id"]
+          );
 
+          $mysqli->query($sql);
 
-        $sql = sprintf(
-          "UPDATE users
-        SET `%s` = 1
-        WHERE user_id = %s",
-          $itemConditions[1],
-          $_SESSION["user_id"]
-        );
+          unset($_SESSION["containerOpen"]);
+          return true;
+          break;
+        } elseif ($itemConditions[0] != "" && !isset($_SESSION["containerOpen"])) {
+          return false;
+          break;
+        } else {
+          $sql = sprintf(
+            "UPDATE users
+          SET `%s` = 1
+          WHERE user_id = %s",
+            $itemConditions[1],
+            $_SESSION["user_id"]
+          );
 
-        $mysqli->query($sql);
+          $mysqli->query($sql);
 
-        return true;
-        break;
+          return true;
+          break;
+        }
       }
     }
   case str_contains($command, "open"):

@@ -43,7 +43,7 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
       echo ("<br> Please re-load the page");
       exit();
     }
-
+    var_dump($roomData[2][0]);
     ?>
 
     <?php if (isset($_POST["command"])) : ?> <!-- Check if a command has been submitted -->
@@ -78,7 +78,6 @@ function interpret_command($command, $nearbyRooms, $itemConditions)
         <p>You have picked up all items in this room.</p>
       <?php elseif (isset($_SESSION["containerOpen"]) && $_SESSION["containerOpen"] == true) : ?>
         <p>The container opens,<br>you see a <?php echo ($roomData[3]); ?></p>
-        <?php unset($_SESSION["containerOpen"]); ?>
       <?php elseif(isset($_SESSION["doorOpen"]) && $_SESSION["doorOpen"] == true) : ?>
         <p>The door opens</p>
       <?php else : ?>
